@@ -1,0 +1,16 @@
+{
+  "categories": [
+    "billing",
+    "verification",
+    "login_access",
+    "technical_issue",
+    "account_closure",
+    "feature_request",
+    "other"
+  ],
+  "urgency_levels": [
+    "low",
+    "medium",
+    "high"
+  ]
+}

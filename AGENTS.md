@@ -12,29 +12,23 @@ Use OpenRouter for both stages. These are application models; they do not select
 
 | Stage | Default OpenRouter model ID | Role |
 | --- | --- | --- |
-| Classification | `~typesafe/jev-latest` | Predict category and urgency with confidence |
+| Classification | `anthropic/claude-haiku-5.5` | Return the complete validated classification JSON |
 | Reply generation | `anthropic/claude-haiku-5.5` | Write short customer reply drafts for auto-triaged tickets |
 
 - Preserve these defaults unless the user changes them. Allow separate CLI or environment overrides for each model.
 - Read credentials from `OPENROUTER_API_KEY`. Never commit credentials or include authorization headers in artifacts or logs. Provide an `.env.example` containing placeholders when implementing configuration.
-- Verify the current OpenRouter request format before implementing either adapter. Jev uses typed decision questions and has a different API contract from chat completion models; do not assume it accepts the Haiku request body.
+- Use OpenRouter chat completions with strict JSON Schema output and local validation for both stages. Require providers that support the requested parameters.
 - Keep model access behind small, separate adapters so parsing, routing, and evaluation can be tested without network calls.
-- Log both the requested model and the resolved model when the response supplies it, since `jev-latest` can change. Never silently switch to another model after a failure.
+- Log both the requested model and the resolved model when the response supplies it. Never silently switch to another model after a failure.
 
-### Jev compatibility issue to resolve
+### Jev deferred
 
-The OA explicitly requests an LLM classification call returning JSON with `category`, `urgency`, `confidence`, `reasoning_summary`, and `needs_human_review`, including a JSON-only instruction. Jev returns typed decisions and probabilities; it does not generate free-form explanations. A Jev adapter alone does not fulfill the literal requirement for a model-generated `reasoning_summary` or a conventional LLM classification call.
-
-Keep Jev as the user's preferred classifier, but make this discrepancy visible before implementing the classification contract. Agree with the user on whether the OA permits a typed decision model with an explicitly identified code-generated summary, or requires a generative classification model. Do not present a code-generated summary as model reasoning, invent an explanation, silently add another model call, or claim full OA compliance while this remains unresolved.
-
-If Jev returns separate category and urgency confidence values, document how they become the single routing confidence. A proposed conservative policy is `min(category_confidence, urgency_confidence)`; this is a design choice, not a joint correctness probability.
+The user selected Haiku for classification so the model can return all five required fields, including `reasoning_summary`. Jev integration is deferred. Do not add it to the implementation without a new request.
 
 References:
 
-- [Selected Jev model](https://openrouter.ai/~typesafe/jev-latest)
 - [Selected Haiku model](https://openrouter.ai/anthropic/claude-haiku-5.5)
-- [OpenRouter Jev integration](https://openrouter.ai/docs/guides/community/jev)
-- [TypeSafe model concepts](https://docs.typesafe.ai/introduction)
+- [OpenRouter structured outputs](https://openrouter.ai/docs/guides/features/structured-outputs)
 
 ## Input and preprocessing
 
@@ -88,7 +82,7 @@ Ship usable `tickets.json` and `label_schema.json` inputs. Each pipeline run mus
 
 Keep generated artifacts together in the selected output directory. Avoid mixing records from different runs.
 
-Write one JSONL log record for every classification or reply-generation request, including retries and failed calls. Include `stage`, `ticket_id`, an ISO-8601 timestamp with timezone, `provider`, `model`, `prompt_hash`, and `output_artifact`. Use SHA-256 over a stable serialization of the actual model input. For Jev, include state, question instructions, and allowed choices in the hash. On request failures, save a sanitized error artifact and point the log record to it.
+Write one JSONL log record for every classification or reply-generation request, including retries and failed calls. Include `stage`, `ticket_id`, an ISO-8601 timestamp with timezone, `provider`, `model`, `prompt_hash`, and `output_artifact`. Use SHA-256 over a stable serialization of the messages and output schema. On request failures, save a sanitized error artifact and point the log record to it.
 
 ## Evaluation and validation
 
@@ -105,7 +99,7 @@ Write one JSONL log record for every classification or reply-generation request,
 
 - Prefer ordinary Python functions and a small CLI. Keep preprocessing, model adapters, response validation, routing, reply generation, artifact writing, and evaluation separable without introducing an orchestration framework.
 - Document dependencies, environment setup, model configuration, output paths, and failure behavior in `README.md`.
-- Target commands to implement; these are not claims that the files already exist:
+- Run these commands from the repository root (the pipeline requires a configured API key; validation and tests are offline):
 
 ```text
 python main.py --tickets tickets.json --schema label_schema.json --output-dir outputs

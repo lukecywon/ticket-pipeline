@@ -1,0 +1,38 @@
+[
+  {
+    "ticket_id": "T1",
+    "customer_message": "I updated my password yesterday but I still can't log in to my account. The reset email works, but after setting a new password it says invalid credentials.",
+    "expected_category": "login_access",
+    "expected_urgency": "high"
+  },
+  {
+    "ticket_id": "T2",
+    "customer_message": "I withdrew funds two days ago and still don't see them in my bank account. Can you check what's happening?",
+    "expected_category": "billing",
+    "expected_urgency": "high"
+  },
+  {
+    "ticket_id": "T3",
+    "customer_message": "Your mobile site is slow on my phone and the chart sometimes freezes when I switch tabs.",
+    "expected_category": "technical_issue",
+    "expected_urgency": "medium"
+  },
+  {
+    "ticket_id": "T4",
+    "customer_message": "What documents do I need to verify my account if my address changed recently?",
+    "expected_category": "verification",
+    "expected_urgency": "medium"
+  },
+  {
+    "ticket_id": "T5",
+    "customer_message": "Please close my account permanently. I no longer want to use this service.",
+    "expected_category": "account_closure",
+    "expected_urgency": "medium"
+  },
+  {
+    "ticket_id": "T6",
+    "customer_message": "It would be great if dark mode was available in the dashboard.",
+    "expected_category": "feature_request",
+    "expected_urgency": "low"
+  }
+]
