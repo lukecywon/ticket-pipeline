@@ -40,6 +40,30 @@ python main.py --classification-model anthropic/claude-haiku-5.5 --reply-model a
 
 Model configuration precedence is CLI flags, environment variables, then defaults. Environment variables override values in `.env`, including an explicitly blank environment API key. Both stages default to Haiku 5.5; Jev is deferred because the assessment requires a model-generated explanation. Model overrides must support chat completions and JSON Schema output; there is no automatic fallback to another model.
 
+## Running unit tests
+
+After installing `requirements.txt`, run the full suite from the repository root:
+
+```text
+python -m unittest discover -s tests
+```
+
+For verbose output showing each test name and result:
+
+```text
+python -m unittest discover -s tests -v
+```
+
+To run a specific test, filter by its name with `-k`. For example, to check confidence routing at the `0.65` threshold:
+
+```text
+python -m unittest discover -s tests -k test_threshold_ignores_model_flag -v
+```
+
+The suite uses standard-library `unittest`, mocked HTTP responses, and temporary directories. It needs no API key, makes no real model calls, and does not replace the artifacts in `outputs/`.
+
+A successful run ends with `OK` and exits with status `0`. A failing run prints the affected test and traceback, ends with `FAILED`, and exits with a nonzero status. Tests cover input and output validation, confidence routing, reply recovery, retries, evaluation metrics, artifact consistency, and CLI behavior.
+
 ## Input contract and preprocessing
 
 `tickets.json` is an array of objects with these required fields:
